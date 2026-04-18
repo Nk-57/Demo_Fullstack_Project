@@ -1,180 +1,254 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkyCast - Weather Tracker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #4f46e5;
-            --bg: #0f172a;
-            --card: #1e293b;
-            --text: #f8fafc;
-            --muted: #94a3b8;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkyCast - Weather Tracker</title>
 
-        body {
-            font-family: 'Outfit', sans-serif;
-            background: radial-gradient(circle at top right, #1e1b4b, var(--bg));
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
 
-        .container {
-            width: 90%;
-            max-width: 500px;
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            padding: 2.5rem;
-            border-radius: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
+<style>
+:root {
+    --primary: #4f46e5;
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+}
 
-        header { text-align: center; margin-bottom: 2rem; }
-        h1 { font-size: 2.5rem; margin: 0; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-        p { color: var(--muted); margin-top: 0.5rem; }
+body {
+    font-family: 'Outfit', sans-serif;
+    background: radial-gradient(circle at top right, #1e1b4b, var(--bg));
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    transition: 0.5s;
+}
 
-        .search-box {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 2rem;
-        }
+.container {
+    width: 90%;
+    max-width: 500px;
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(15px);
+    padding: 2.5rem;
+    border-radius: 2rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    transition: 0.3s;
+}
 
-        input {
-            flex: 1;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid #334155;
-            padding: 1rem 1.5rem;
-            border-radius: 1rem;
-            color: white;
-            font-family: inherit;
-            outline: none;
-            transition: 0.2s;
-        }
+.container:hover {
+    transform: translateY(-5px);
+}
 
-        input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+header { text-align: center; margin-bottom: 2rem; }
 
-        button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 1rem 1.5rem;
-            border-radius: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
+h1 {
+    font-size: 2.5rem;
+    margin: 0;
+    background: linear-gradient(to right, #818cf8, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
 
-        button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); }
+p { color: var(--muted); }
 
-        .weather-display {
-            text-align: center;
-            display: none;
-            animation: fadeIn 0.5s ease-out;
-        }
+.search-box {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+input {
+    flex: 1;
+    background: rgba(15,23,42,0.6);
+    border: 1px solid #334155;
+    padding: 1rem;
+    border-radius: 1rem;
+    color: white;
+    outline: none;
+}
 
-        .temp { font-size: 4rem; font-weight: 600; margin: 1rem 0; }
-        .location { font-size: 1.5rem; color: var(--muted); }
-        .desc { font-size: 1.25rem; text-transform: capitalize; }
+input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 10px rgba(79,70,229,0.3);
+}
 
-        .history {
-            margin-top: 2rem;
-            border-top: 1px solid #334155;
-            padding-top: 1.5rem;
-        }
+button {
+    background: var(--primary);
+    border: none;
+    padding: 1rem;
+    border-radius: 1rem;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
 
-        .history h3 { font-size: 1rem; color: var(--muted); margin-bottom: 1rem; }
-        .history-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.5rem 0;
-            font-size: 0.875rem;
-            color: #cbd5e1;
-            border-bottom: 1px solid #1e293b;
-        }
-    </style>
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(79,70,229,0.5);
+}
+
+/* Loader */
+.loader {
+    border: 4px solid #1e293b;
+    border-top: 4px solid var(--primary);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    margin: 20px auto;
+    display: none;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+.weather-display {
+    text-align: center;
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {opacity:0; transform:translateY(10px);}
+    to {opacity:1; transform:translateY(0);}
+}
+
+.icon {
+    font-size: 3rem;
+}
+
+.temp {
+    font-size: 4rem;
+    text-shadow: 0 0 20px rgba(255,255,255,0.3);
+}
+
+.location { color: var(--muted); font-size: 1.3rem; }
+
+.history {
+    margin-top: 2rem;
+    border-top: 1px solid #334155;
+    padding-top: 1rem;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+}
+
+.history-item:hover {
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+}
+</style>
 </head>
+
 <body>
-    <div class="container">
-        <header>
-            <h1>SkyCast</h1>
-            <p>Know your weather, track your world</p>
-        </header>
 
-        <div class="search-box">
-            <input type="text" id="cityInput" placeholder="Enter city name...">
-            <button onclick="getWeather()">Check</button>
-        </div>
+<div class="container">
+    <header>
+        <h1>SkyCast</h1>
+        <p>Know your weather, track your world</p>
+    </header>
 
-        <div id="weatherResult" class="weather-display">
-            <div class="location" id="resLocation">London, UK</div>
-            <div class="temp" id="resTemp">22°C</div>
-            <div class="desc" id="resDesc">Scattered Clouds</div>
-        </div>
-
-        <div class="history">
-            <h3>Recent Searches</h3>
-            <div id="historyList">
-                <!-- History items here -->
-            </div>
-        </div>
+    <div class="search-box">
+        <input type="text" id="cityInput" placeholder="Enter city">
+        <button onclick="getWeather()">Search</button>
     </div>
 
-    <script>
-        const BACKEND_URL = 'http://localhost:3001';
+    <div class="loader" id="loader"></div>
 
-        async function getWeather() {
-            const city = document.getElementById('cityInput').value;
-            if (!city) return alert("Please enter a city!");
+    <div id="weatherResult" class="weather-display">
+        <div class="icon" id="weatherIcon">☀️</div>
+        <div class="location" id="resLocation"></div>
+        <div class="temp" id="resTemp"></div>
+        <div id="resDesc"></div>
+    </div>
 
-            try {
-                // Call our own Backend (which handles Caching)
-                const res = await fetch(`${BACKEND_URL}/weather/${city}`);
-                const data = await res.json();
+    <div class="history">
+        <h3>Recent Searches</h3>
+        <div id="historyList"></div>
+    </div>
+</div>
 
-                if (data.error) throw new Error(data.error);
+<script>
+const BACKEND_URL = 'http://localhost:3001';
 
-                // Update UI
-                document.getElementById('resLocation').innerText = data.place;
-                document.getElementById('resTemp').innerText = data.temperature;
-                document.getElementById('resDesc').innerText = `${data.description} (${data.source || 'cached'})`;
-                document.getElementById('weatherResult').style.display = 'block';
+function setBackground(condition) {
+    const body = document.body;
 
-                loadHistory();
-            } catch (err) {
-                console.error(err);
-                alert("Failed to fetch weather. Check city name or server.");
-            }
-        }
+    if (condition.includes("rain"))
+        body.style.background = "linear-gradient(135deg,#0f2027,#203a43,#2c5364)";
+    else if (condition.includes("cloud"))
+        body.style.background = "linear-gradient(135deg,#757f9a,#d7dde8)";
+    else if (condition.includes("clear"))
+        body.style.background = "linear-gradient(135deg,#f7971e,#ffd200)";
+    else
+        body.style.background = "radial-gradient(circle at top right,#1e1b4b,#0f172a)";
+}
 
+function setIcon(condition) {
+    let icon = "🌤️";
+    if (condition.includes("rain")) icon = "🌧️";
+    else if (condition.includes("cloud")) icon = "☁️";
+    else if (condition.includes("clear")) icon = "☀️";
+    else if (condition.includes("snow")) icon = "❄️";
+    document.getElementById("weatherIcon").innerText = icon;
+}
 
-        async function loadHistory() {
-            try {
-                const res = await fetch(`${BACKEND_URL}/weather-history`);
-                const data = await res.json();
-                const list = document.getElementById('historyList');
-                list.innerHTML = '';
-                data.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'history-item';
-                    div.innerHTML = `<span>${item.place}</span> <span>${item.temperature}</span>`;
-                    list.appendChild(div);
-                });
-            } catch (err) {
-                console.error(err);
-            }
-        }
+async function getWeather() {
+    const city = document.getElementById('cityInput').value;
+    if (!city) return alert("Enter city!");
 
-        // Initial load
-        window.onload = loadHistory;
-    </script>
+    document.getElementById('loader').style.display = 'block';
+
+    try {
+        const res = await fetch(`${BACKEND_URL}/weather/${city}`);
+        const data = await res.json();
+
+        document.getElementById('loader').style.display = 'none';
+
+        document.getElementById('resLocation').innerText = data.place;
+        document.getElementById('resTemp').innerText = data.temperature;
+        document.getElementById('resDesc').innerText = data.description;
+
+        setBackground(data.description.toLowerCase());
+        setIcon(data.description.toLowerCase());
+
+        document.getElementById('weatherResult').style.display = 'block';
+
+        loadHistory();
+    } catch (err) {
+        document.getElementById('loader').style.display = 'none';
+        alert("Error fetching weather");
+    }
+}
+
+async function loadHistory() {
+    try {
+        const res = await fetch(`${BACKEND_URL}/weather-history`);
+        const data = await res.json();
+
+        const list = document.getElementById('historyList');
+        list.innerHTML = '';
+
+        data.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'history-item';
+            div.innerHTML = `<span>${item.place}</span> <span>${item.temperature}</span>`;
+            list.appendChild(div);
+        });
+    } catch (err) {}
+}
+
+window.onload = loadHistory;
+</script>
+
 </body>
 </html>

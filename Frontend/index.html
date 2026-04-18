@@ -3,16 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <title>Simple Student App</title>
-</head>
-<body>
-    <h1>Add Student</h1>
-    <form id="studentForm">
-        <input type="text" id="name" placeholder="Name" required><br><br>
-        <input type="email" id="email" placeholder="Email" required><br><br>
-        <button type="submit">Submit</button>
-    </form>
 
-    <div id="result"></div>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 300px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background: #667eea;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #5a67d8;
+        }
+
+        #result {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #444;
+            word-wrap: break-word;
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Add Student</h1>
+
+        <form id="studentForm">
+            <input type="text" id="name" placeholder="Name" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <button type="submit">Submit</button>
+        </form>
+
+        <div id="result"></div>
+    </div>
 
     <script>
         document.getElementById('studentForm').onsubmit = async (e) => {
@@ -25,6 +98,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email })
             });
+
             const data = await response.json();
             document.getElementById('result').innerText = JSON.stringify(data);
         };
