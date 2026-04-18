@@ -51,6 +51,7 @@ h1 {
     margin: 0;
     background: linear-gradient(to right, #818cf8, #c084fc);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -175,10 +176,22 @@ button:hover {
         <h3>Recent Searches</h3>
         <div id="historyList"></div>
     </div>
+    <button onclick="logout()" style="width: 100%; padding: 1rem; border-radius: 1rem; border: none; background: #ef4444; color: white; font-weight: 600; cursor: pointer; margin-top: 2rem;">Logout</button>
 </div>
 
 <script>
-const BACKEND_URL = 'http://localhost:3001';
+// Check if user is logged in
+if(!localStorage.getItem("userName")) {
+    window.location.href = "login.html";
+}
+
+function logout() {
+    localStorage.removeItem("userName");
+    window.location.href = "login.html";
+}
+
+const BACKEND_URL = 'http://localhost:3000';
+
 
 function setBackground(condition) {
     const body = document.body;
@@ -204,36 +217,43 @@ function setIcon(condition) {
 
 async function getWeather() {
     const city = document.getElementById('cityInput').value;
+    const email = localStorage.getItem("userEmail");
     if (!city) return alert("Enter city!");
 
     document.getElementById('loader').style.display = 'block';
 
     try {
-        const res = await fetch(`${BACKEND_URL}/weather/${city}`);
+        const res = await fetch(`${BACKEND_URL}/weather?city=${city}&email=${email}`);
         const data = await res.json();
 
         document.getElementById('loader').style.display = 'none';
+        
+        if(data.error) throw new Error(data.error);
 
         document.getElementById('resLocation').innerText = data.place;
         document.getElementById('resTemp').innerText = data.temperature;
-        document.getElementById('resDesc').innerText = data.description;
+        document.getElementById('resDesc').innerText = `${data.description} (${data.source || 'cached'})`;
 
-        setBackground(data.description.toLowerCase());
-        setIcon(data.description.toLowerCase());
+        if (data.description) {
+            setBackground(data.description.toLowerCase());
+            setIcon(data.description.toLowerCase());
+        }
 
         document.getElementById('weatherResult').style.display = 'block';
 
         loadHistory();
     } catch (err) {
         document.getElementById('loader').style.display = 'none';
-        alert("Error fetching weather");
+        alert(err.message || "Error fetching weather");
     }
 }
 
 async function loadHistory() {
     try {
-        const res = await fetch(`${BACKEND_URL}/weather-history`);
+        const email = localStorage.getItem("userEmail");
+        const res = await fetch(`${BACKEND_URL}/weather-history?email=${email}`);
         const data = await res.json();
+
 
         const list = document.getElementById('historyList');
         list.innerHTML = '';

@@ -85,10 +85,22 @@
         </form>
 
         <div id="result"></div>
+        <button onclick="logout()" style="background: #e53e3e; margin-top: 20px;">Logout</button>
     </div>
 
     <script>
+        // Check if user is logged in
+        if(!localStorage.getItem("userName")) {
+            window.location.href = "login.html";
+        }
+
+        function logout() {
+            localStorage.removeItem("userName");
+            window.location.href = "login.html";
+        }
+
         document.getElementById('studentForm').onsubmit = async (e) => {
+
             e.preventDefault();
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
