@@ -2,39 +2,27 @@ const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
-const app=express();
+const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static('Frontend'));
 
-const db=mysql.createConnection({
-    host:"localhost",
-    user:"root",
-    password:"",
-    database:'student_db'
+const db = mysql.createConnection({
+    host: "localhost",
+    user: "root",
+    password: "",
+    database: 'student_db'
 });
 
-db.connect((err)=>{
-    if(err){
+db.connect((err) => {
+    if (err) {
         console.log("Database connection failed: " + err.stack);
         return;
     }
     console.log("Connected to database");
-    
-    // Create users table if not exists
-    const createUsersTable = `
-        CREATE TABLE IF NOT EXISTS users (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(255) NOT NULL,
-            email VARCHAR(255) NOT NULL UNIQUE,
-            password VARCHAR(255) NOT NULL
-        )
-    `;
-    db.query(createUsersTable, (err) => {
-        if(err) console.error("Could not create users table", err);
-    });
 
-    // Create weather_records table (using a new name to avoid schema conflicts)
+    // Create weather_records table
     const createWeatherTable = `
         CREATE TABLE IF NOT EXISTS weather_records (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -46,44 +34,32 @@ db.connect((err)=>{
         )
     `;
     db.query(createWeatherTable, (err) => {
-        if(err) console.error("Could not create weather table", err);
+        if (err) console.error("Could not create weather table", err);
     });
 });
 
-
-// Signup Route
-app.post('/signup', async (req, res) => {
-    const { name, email, password } = req.body;
-    try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const sql = "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
-        db.query(sql, [name, email, hashedPassword], (err, result) => {
-            if(err) {
-                if(err.code === 'ER_DUP_ENTRY') return res.json({ Error: "Email already exists" });
-                return res.json({ Error: "Error in registration" });
-            }
-            return res.json({ Status: "Success" });
-        });
-    } catch (err) {
-        return res.json({ Error: "Encryption failed" });
-    }
+// Root Route
+app.get('/', (req, res) => {
+    return res.json("Unified Backend is Running");
 });
 
-// Login Route
+// Simplified Login Route (Checks Name & Email in the student table)
 app.post('/login', (req, res) => {
-    const { email, password } = req.body;
-    const sql = "SELECT * FROM users WHERE email = ?";
-    db.query(sql, [email], async (err, data) => {
-        if(err) return res.json({ Error: "Server error" });
-        if(data.length > 0) {
-            const match = await bcrypt.compare(password, data[0].password.toString());
-            if(match) {
-                return res.json({ Status: "Success", Name: data[0].name, Email: data[0].email });
-            } else {
-                return res.json({ Error: "Password not matched" });
-            }
+    const { name, email } = req.body;
+    console.log("Login attempt for:", name, email);
+    
+    const sql = "SELECT * FROM student WHERE Name = ? AND Email = ?";
+    db.query(sql, [name, email], (err, data) => {
+        if (err) {
+            console.error("Login SQL Error:", err);
+            return res.json({ Error: "Server error" });
+        }
+        if (data.length > 0) {
+            console.log("Login Success!");
+            return res.json({ Status: "Success", Name: data[0].Name, Email: data[0].Email });
         } else {
-            return res.json({ Error: "Email not found" });
+            console.log("Login Failed: Record not found");
+            return res.json({ Error: "Name or Email not found in student records" });
         }
     });
 });
@@ -91,13 +67,12 @@ app.post('/login', (req, res) => {
 // Weather Route with User-Specific Caching
 app.get('/weather', (req, res) => {
     const { city, email } = req.query;
-    if(!email) return res.status(400).json({ error: "Email required for tracking" });
+    if (!email) return res.status(400).json({ error: "Email required" });
 
-    // 1. Check if user already searched this city in the new weather_records table
     const checkSql = "SELECT * FROM weather_records WHERE user_email = ? AND place LIKE ? ORDER BY search_time DESC LIMIT 1";
     db.query(checkSql, [email, `%${city}%`], async (err, results) => {
         if (err) return res.status(500).json(err);
-        
+
         if (results.length > 0) {
             const row = results[0];
             return res.json({ 
@@ -107,8 +82,7 @@ app.get('/weather', (req, res) => {
                 source: 'database' 
             });
         }
-        
-        // 2. Fetch from FastAPI
+
         try {
             const response = await fetch(`http://127.0.0.1:8000/weather?place=${city}`);
             const data = await response.json();
@@ -117,20 +91,19 @@ app.get('/weather', (req, res) => {
             const temp = data.current.temperature_2m + '°C';
             const desc = data.current.weather_description;
             const location = `${data.location.name}, ${data.location.country}`;
-            
-            // 3. Save to User's History
+
             const insertSql = "INSERT INTO weather_records (user_email, place, temperature, description) VALUES (?, ?, ?, ?)";
             db.query(insertSql, [email, location, temp, desc], (err) => {
                 if (err) console.error("Cache Error:", err);
                 res.json({ place: location, temperature: temp, description: desc, source: 'api' });
             });
         } catch (fetchErr) {
-            res.status(502).json({ error: "Weather service offline. Check api2.py" });
+            res.status(502).json({ error: "Weather service offline" });
         }
     });
 });
 
-// User-Specific History Route
+// History Route
 app.get('/weather-history', (req, res) => {
     const { email } = req.query;
     const sql = "SELECT * FROM weather_records WHERE user_email = ? ORDER BY search_time DESC LIMIT 10";
@@ -140,31 +113,27 @@ app.get('/weather-history', (req, res) => {
     });
 });
 
-
-
 // Student Management Routes
 app.get('/students', (req, res) => {
     const sql = "SELECT * FROM student";
     db.query(sql, (err, data) => {
-        if(err) return res.json(err);
+        if (err) return res.json(err);
         return res.json(data);
     });
 });
 
 app.post('/add-student', (req, res) => {
     const sql = "INSERT INTO student (`Name`, `Email`) VALUES (?,?)";
-    const values = [req.body.name, req.body.email];
-    db.query(sql, values, (err, data) => {
-        if(err) return res.json(err);
+    db.query(sql, [req.body.name, req.body.email], (err, data) => {
+        if (err) return res.json(err);
         return res.json(data);
     });
 });
 
 app.put('/update/:id', (req, res) => {
     const sql = "UPDATE student SET `Name` = ?, `Email` = ? WHERE ID = ?";
-    const values = [req.body.name, req.body.email, req.params.id];
-    db.query(sql, values, (err, data) => {
-        if(err) return res.json(err);
+    db.query(sql, [req.body.name, req.body.email, req.params.id], (err, data) => {
+        if (err) return res.json(err);
         return res.json(data);
     });
 });
@@ -172,11 +141,12 @@ app.put('/update/:id', (req, res) => {
 app.delete('/delete/:id', (req, res) => {
     const sql = "DELETE FROM student WHERE ID = ?";
     db.query(sql, [req.params.id], (err, data) => {
-        if(err) return res.json(err);
+        if (err) return res.json(err);
         return res.json(data);
     });
 });
 
-app.listen(3000, () => {
-    console.log("Unified Backend listening on port 3000");
+app.listen(3000, '0.0.0.0', () => {
+    console.log("Unified Backend listening on http://10.31.13.83:3000");
 });
+
