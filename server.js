@@ -34,7 +34,7 @@ app.get('/students', (req, res) => {
     });
 });
 
-app.post('/create', (req, res) => {
+app.post('/add-student', (req, res) => {
     const sql = "INSERT INTO student (`Name`, `Email`) VALUES (?,?)";
     const values = [
         req.body.name,
@@ -68,6 +68,6 @@ app.delete('/delete/:id', (req, res) => {
     });
 });
 
-app.listen(8081, ()=>{
-    console.log("listening");
+app.listen(3000, ()=>{
+    console.log("listening on port 3000");
 });
